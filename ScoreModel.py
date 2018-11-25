@@ -62,6 +62,6 @@ class ScoreNetwork(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.avgpool(x)
-        x = F.sigmoid(x)
-        return x
+        x = torch.sigmoid(x)
+        return x.squeeze()
         
