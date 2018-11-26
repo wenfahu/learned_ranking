@@ -4,6 +4,7 @@ import argparse
 import torch.nn as nn
 from torch.utils.data import TensorDataset
 from ScoreModel import ScoreNetwork
+from batch_sampler import ClassBalancedSampler
 import os
 
 
@@ -55,8 +56,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--feat-path')
-    parser.add_argument('--gallery-batch-size', type=int, default=50)
-    parser.add_argument('--query-batch-size', type=int, default=5)
+    parser.add_argument('--num-classes', type=int, default=50)
+    parser.add_argument('--instance-per-class', type=int, default=5)
+    parser.add_argument('--episodes', type=int, default=200)
     parser.add_argument('--topk', type=int, default=20)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--step_size', type=int, default=20)
@@ -76,8 +78,14 @@ if __name__ == "__main__":
     gallery_set = TensorDataset(gallery_feat, gallery_label)
     query_set = TensorDataset(query_feat, query_label)
 
-    gallery_loader = torch.utils.data.DataLoader(gallery_set, batch_size = args.gallery_batch_size)
-    query_loader = torch.utils.data.DataLoader(query_set, batch_size = args.query_batch_size)
+    gallery_sampler = ClassBalancedSampler(feats['gallery_label'], args.num_classes, 
+            args.instace_per_class, args.episodes)
+    gallery_loader = torch.utils.data.DataLoader(gallery_set, 
+            batch_sampler=gallery_sampler)
+    query_sampler = ClassBalancedSampler(feats['query_label'], args.num_classes,
+            1, args.episodes)
+    query_loader = torch.utils.data.DataLoader(query_set, 
+            batch_sampler=query_sampler)
 
     model = ScoreNetwork(args.topk)
     criterion = nn.BCELoss()
