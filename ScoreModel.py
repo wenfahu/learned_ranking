@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import pdb
 
 class Block(nn.Module):
 
@@ -16,6 +17,7 @@ class Block(nn.Module):
         self.bn1 = nn.BatchNorm2d(planes)
         self.conv_w = nn.Conv2d(planes, planes,
                 kernel_size=(1, 3),
+                stride=(1, 2),
                 dilation = dilation,
                 groups=planes)
         self.bn2 = nn.BatchNorm2d(planes)
@@ -58,6 +60,7 @@ class ScoreNetwork(nn.Module):
         :returns: TODO
 
         """
+        pdb.set_trace()
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)

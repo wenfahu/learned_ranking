@@ -1,6 +1,7 @@
 # coding=utf-8
 import numpy as np
 import torch
+import math
 
 
 class ClassBalancedSampler(object):
@@ -23,7 +24,7 @@ class ClassBalancedSampler(object):
         - num_samples: number of samples for each iteration for each class (support + query)
         - iterations: number of iterations (episodes) per epoch
         '''
-        super(PrototypicalBatchSampler, self).__init__()
+        super(ClassBalancedSampler, self).__init__()
         self.labels = labels
         self.classes_per_it = classes_per_it
         self.sample_per_class = num_samples
@@ -61,7 +62,12 @@ class ClassBalancedSampler(object):
                 # FIXME when torch.argwhere will exists
                 label_idx = torch.arange(len(self.classes)).long()[self.classes == c].item()
                 sample_idxs = torch.randperm(self.numel_per_class[label_idx])[:spc]
+                # over sample the ths classes with fewer examples
+                if len(sample_idxs) < spc:
+                    sample_idxs = sample_idxs.repeat(math.ceil(
+                        spc/sample_idxs.size(0)))[:spc]
                 batch[s] = self.indexes[label_idx][sample_idxs]
+
             batch = batch[torch.randperm(len(batch))]
             yield batch
 
