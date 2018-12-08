@@ -6,9 +6,9 @@ from resnet import resnet18
 from  learned_rerank import re_rank
 #######################################################################
 # Evaluate
-def evaluate(score,ql,qc,gl,gc):
-    index = np.argsort(score)  #from small to large
-    index = index[::-1]
+def evaluate(index,ql,qc,gl,gc):
+    # index = np.argsort(score)  #from small to large
+    # index = index[::-1]
     # good index
     query_index = np.argwhere(gl==ql)
     camera_index = np.argwhere(gc==qc)
@@ -40,6 +40,8 @@ def compute_mAP(index, good_index, junk_index):
     rows_good = rows_good.flatten()
     
     cmc[rows_good[0]:] = 1
+    import pdb
+    pdb.set_trace()
     for i in range(ngood):
         d_recall = 1.0/ngood
         precision = (i+1)*1.0/(rows_good[i]+1)
@@ -59,7 +61,7 @@ query_label = result['query_label'][0]
 gallery_feature = result['gallery_f']
 gallery_cam = result['gallery_cam'][0]
 gallery_label = result['gallery_label'][0]
-ckpt = torch.load('granks/checkpoint_epoch00.pth')
+ckpt = torch.load('granks/checkpoint_epoch59.pth')
 model = resnet18()
 model.load_state_dict(ckpt)
 model.cuda()

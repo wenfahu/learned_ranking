@@ -19,6 +19,7 @@ def re_rank(query_feat, gallery_feat, model, topk=50):
     """
     dist = torch.mm(query_feat, gallery_feat.transpose(1, 0))
     k_dist, k_idx = torch.topk(dist, k=topk, dim=1 )
+    sorted_dsit, sorted_idx = torch.sort(dist, dim=1, descending=True)
     # k_idx of shape (query_size x k)
 
     # gallery_feat of shape GALLARY_SIZE x FEAT_DIM
@@ -48,12 +49,14 @@ def re_rank(query_feat, gallery_feat, model, topk=50):
         idx = idx + 1
                 
 
-    results = torch.zeros_like(dist)
+    sorted_score, re_arange = torch.sort(score, dim=1, descending=True)
+    sorted_idx[:, :topk] = torch.gather(sorted_idx[:, :topk], 1, re_arange)
+    import pdb
+    pdb.set_trace()
+    # rescored_dist = torch.gather(dist, 1, k_idx) * score
+    # results.scatter_(1, k_idx, rescored_dist)
 
-    rescored_dist = torch.gather(dist, 1, k_idx) * score
-    results.scatter_(1, k_idx, rescored_dist)
-
-    return results
+    return sorted_idx
 
 
 
